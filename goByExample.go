@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"math"
+)
 
 func main() {
 	fmt.Println("hello world")
@@ -88,6 +91,27 @@ func main() {
 	nums := []int {1,2,3,4}
 	_s = sum(nums...)
 	fmt.Println(_s)
+
+	// 指针
+	t := 10
+	t_p := &t
+	fmt.Println(t, t_p)
+	*t_p = 15
+	fmt.Println(t, t_p)
+
+	// struct,
+	p := person{name: "john", age: 20}
+	fmt.Println(p.name, p.age)
+
+	// method, 用于结构的方法
+	_r := rect{width:9, height:6}
+	_rp := &_r
+	fmt.Println(_rp.area())
+
+	// interface, 接口， 包含一系列的方法, 要实现一个接口需要实现这个接口的所有方法
+	_c := circle{radius: 5}
+	measure(_c)
+
 }
 
 func plus(a int, b int) int {
@@ -102,3 +126,40 @@ func sum(nums ...int) int {
 	}
 	return total
 }
+
+type person struct {
+	name string
+	age  int
+}
+
+type rect struct {
+	width, height int
+}
+
+func (r *rect) area() int {
+	return r.width * r.height
+}
+
+type geometry interface {
+	area() float64
+	perim() float64
+}
+
+type circle struct {
+	radius float64
+}
+
+func (c circle) area() float64 {
+	return math.Pi * c.radius * c.radius
+}
+func (c circle) perim() float64 {
+	return 2 * math.Pi * c.radius
+}
+
+func measure(g geometry) {
+	fmt.Println(g)
+	fmt.Println(g.area())
+	fmt.Println(g.perim())
+}
+
+
