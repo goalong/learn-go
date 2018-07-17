@@ -3,8 +3,6 @@ package main
 import (
 	"fmt"
 	"net/http"
-
-
 	"github.com/goalong/learn-go/gin_blog/pkg/setting"
 	"github.com/goalong/learn-go/gin_blog/routers"
 )

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 	"sync/atomic"
+	"sync"
 	"math/rand"
 	"sort"
 	"strings"
@@ -308,7 +309,7 @@ func main() {
 		fmt.Println("request", req, time.Now())
 	}
 
-	// atomic counter
+	// atomic counter，原子计数，在多个并行的goroutine修改一个变量
 	var ops uint64 = 0
 	for i := 0; i < 50; i++ {
 		go func() {
@@ -323,10 +324,37 @@ func main() {
 	opsFinal := atomic.LoadUint64(&ops)
 	fmt.Println("ops: ", opsFinal)
 
+	// mutex, 也是用于在多个goroutine之间读写一个数据
+	var state = make(map[int]int)
+	var mutex = &sync.Mutex{}
+	var writeOps uint64
+
+	for w := 0; w < 10; w++ {
+		go func() {
+			for {
+				key := rand.Intn(5)
+				val := rand.Intn(100)
+				// 这里加锁保证同时只有一个goroutine操作数据
+				mutex.Lock()
+				state[key] = val
+				mutex.Unlock()
+				atomic.AddUint64(&writeOps, 1)
+				time.Sleep(time.Millisecond)
+			}
+		}()
+	}
+
+	time.Sleep(time.Second)
+	writeOpsFinal := atomic.LoadUint64(&writeOps)
+	fmt.Println("writeOps:", writeOpsFinal)
+	mutex.Lock()
+	fmt.Println("state:", state)
+	mutex.Unlock()
+
 
 	// stateful goroutines
 	var readOps uint64 = 0
-	var writeOps uint64 = 0
+	writeOps = 0
 	reads := make(chan *readOp)
 	writes := make(chan *writeOp)
 
@@ -376,12 +404,12 @@ func main() {
 
 	readOpsFinal := atomic.LoadUint64(&readOps)
 	fmt.Println("readOps: ", readOpsFinal)
-	writeOpsFinal := atomic.LoadUint64(&writeOps)
+	writeOpsFinal = atomic.LoadUint64(&writeOps)
 	fmt.Println("writeOps: ", writeOpsFinal)
 
 	// sorting
 	strs := []string{"c", "a", "b"}
-	sort.Strings(strs)
+	sort.Strings(strs)  // 会修改原字符串
 	fmt.Println("strings: ", strs)
 
 	ints := []int {3,5, 1}
@@ -395,7 +423,8 @@ func main() {
 	// sorting by functions
 
 	fruits := []string {"peach", "banana", "kiwi"}
-	sort.Sort(byLength(fruits))
+	fmt.Println(byLength(fruits))
+	sort.Sort(byLength(fruits))  // todo, 这里byLength是什么
 	fmt.Println(fruits)
 
 	// panic
@@ -568,11 +597,6 @@ func main() {
 	fmt.Println("awaiting signal")
 	<-done
 	fmt.Println("exiting")
-
-
-
-
-
 
 
 }
