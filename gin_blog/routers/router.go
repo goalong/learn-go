@@ -4,7 +4,8 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/goalong/learn-go/gin_blog/pkg/setting"
-	"github.com/goalong/learn-go/gin_blog/routers/v1"
+	"github.com/goalong/learn-go/gin_blog/routers/api/v1"
+	"github.com/goalong/learn-go/gin_blog/routers/api"
 )
 
 func InitRouter() *gin.Engine {
@@ -15,6 +16,8 @@ func InitRouter() *gin.Engine {
 	r.Use(gin.Recovery())
 
 	gin.SetMode(setting.RunMode)
+
+	r.GET("/auth", api.GetAuth)
 
 	apiv1 := r.Group("/api/v1")
 	{
