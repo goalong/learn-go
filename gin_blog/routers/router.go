@@ -6,6 +6,7 @@ import (
 	"github.com/goalong/learn-go/gin_blog/pkg/setting"
 	"github.com/goalong/learn-go/gin_blog/routers/api/v1"
 	"github.com/goalong/learn-go/gin_blog/routers/api"
+	"github.com/goalong/learn-go/gin_blog/middleware/jwt"
 )
 
 func InitRouter() *gin.Engine {
@@ -20,6 +21,8 @@ func InitRouter() *gin.Engine {
 	r.GET("/auth", api.GetAuth)
 
 	apiv1 := r.Group("/api/v1")
+
+	apiv1.Use(jwt.JWT())
 	{
 		//获取标签列表
 		apiv1.GET("/tags", v1.GetTags)
