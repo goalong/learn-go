@@ -1,6 +1,14 @@
 package main
 
-import "fmt"
+import ("fmt"
+		"runtime"
+		"sync"
+		"sync/atomic")
+
+var (
+	counter int64
+	wg sync.WaitGroup
+)
 
 func main() {
 	s1 := []int {2,1,3,5,6}
@@ -31,9 +39,31 @@ func main() {
 	// 在接口上调用方法时，接收者是值的方法可以通过指针调用，因为指针会被先解引用
 	// 接受者是指针的方法不可以通过值调用，因为接口中的值没有地址
 
-	user1 := user{name:"jack", email:"jack@ab.com"}
+	//user1 := user{name:"jack", email:"jack@ab.com"}
 
 	// 小写字母开头的变量是私有的，意味着在其他包中不可见，大写的是公开的，可以在其他包中使用
+
+	// 映射的键可以是任何值，切片，函数及包含切片的结构由于具有引用语义不能作为键
+
+	dict := map[string]string{}
+	dict["a"] = "ac"
+	value, exists := dict["a"]  // 从映射获取值并判断键是否存在
+	if exists {fmt.Println(value)}
+	delete(dict, "a")
+	fmt.Println(dict)
+	// 函数间传递一个映射时并不会对该映射进行一份拷贝，函数对这个映射修改时，所有对这个映射的引用都会察觉到修改
+
+	// 接口是声明了一组行为并支持多态的类型
+
+	// 嵌入类型提供了扩展类型的能力，而无需使用继承
+
+	// 原子函数
+	wg.Add(2) // 表示等待两个goroutine
+	go incCounter(1)
+	go incCounter(2)
+	wg.Wait()
+	fmt.Println("final counter:", counter)
+
 
 
 	
@@ -53,4 +83,14 @@ type user struct {
 type admin struct {
 	user
 	level string
+}
+
+
+func incCounter(id int) {
+	defer wg.Done()
+
+	for count := 0; count < 2; count++ {
+		atomic.AddInt64(&counter, 1)
+		runtime.Gosched()
+	}
 }
